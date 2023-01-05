@@ -105,7 +105,7 @@ def CheckingEachOne(name,sheet):
 
 
 def mainRun():
-    FilePath = "C:/Users/niv/Documents/NWI.xlsx"
+    FilePath = "" #Enter you DB path (where you want to store your user id)
     workbook = load_workbook(filename=FilePath)
     sheet = workbook.active
     MainRunArray = [ "NWI",'Hammond',  "Elkhart", 'South+Bend','Gary', 'East+Chicago', 'Michigan+City', 'La+Porte']
