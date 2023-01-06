@@ -9,21 +9,21 @@ def CheckByCityName(city,KindOfCity,workbook,sheet,FilePath):
     addWords2 = ["Indiana", "NWI", "NW Indiana", "NW IN", "North West Indiana"]
 
     if KindOfCity == 2:
-        sortingHat = '&sort=date&term='
+        sortingKind = '&sort=date&term=' #sorting the posts by date
     else:
-        sortingHat = '&sort=&term='
+        sortingKind = '&sort=&term=' #sorting the posts by relevent
 
     i = 1
     str_links = wordSearch = postLink = NamesList = PostList = DatesList = DatesListExcel = ([] for i in range(7))
     NameIndex = 0
-    NumberOfPages = 20
+    NumberOfPages = 20 #The number of pages that you want to search in
+
     while i < NumberOfPages:
-        print('Page: ', i)
-        r = requests.get('https://www.biggerpockets.com/search/topics?page=' + str(i) + sortingHat + city)
+        r = requests.get('https://www.biggerpockets.com/search/topics?page=' + str(i) + sortingKind + city)
         soup = BeautifulSoup(r.text, "html.parser")
-        Names = soup.findAll('a', class_="search-result-topic-author")#search-result-topic-author -> user ID same as what i did in the PC
-        Titles = soup.findAll('a', class_="search-result-title") # get also the link from there and paste it in the excel
-        Dates = soup.findAll(class_="search-result-details") # get also the link from there and paste it in the excel
+        Names = soup.findAll('a', class_="search-result-topic-author")#Get the user of the topic author
+        Titles = soup.findAll('a', class_="search-result-title") #Get also the link from there and paste it in the DB
+        Dates = soup.findAll(class_="search-result-details") #Get the date of the post
 
         for name in Names:
             if (name['href']):
@@ -40,18 +40,15 @@ def CheckByCityName(city,KindOfCity,workbook,sheet,FilePath):
             pr = link.text
             DatesList.append(pr)
 
-
-        #NumOfPost = 2
         for title in Titles:
             pr = title.text
-            if KindOfCity == 2:
+            if KindOfCity == 2:#If you pass a place that is not a city
                 for word in addWords:
                     if (word in pr):
                         str_links.append(NamesList[NameIndex])
                         wordSearch.append(city)
                         postLink.append(PostList[NameIndex])
                         DatesListExcel.append(DatesList[NameIndex])
-                        #print("NamesList[NameIndex]", NamesList[NameIndex])
                         break
 
             else:
@@ -60,7 +57,6 @@ def CheckByCityName(city,KindOfCity,workbook,sheet,FilePath):
                     wordSearch.append((city))
                     postLink.append(PostList[NameIndex])
                     DatesListExcel.append(DatesList[NameIndex])
-                    #print("NamesList[NameIndex]", NamesList[NameIndex])
                     break
                 else:
                     for word in addWords2:
@@ -69,24 +65,18 @@ def CheckByCityName(city,KindOfCity,workbook,sheet,FilePath):
                             wordSearch.append((word + city))
                             postLink.append(PostList[NameIndex])
                             DatesListExcel.append(DatesList[NameIndex])
-                            #print("NamesList[NameIndex]", NamesList[NameIndex])
                             break
             NameIndex = NameIndex + 1
 
-        i = i + 1
-    #print("str_links,wordSearch,postLink,DatesListExcel",str_links, " ",wordSearch," ",postLink," ",DatesListExcel)
+        i = i + 1 #Move to the next page
     WritingInExcel(str_links,wordSearch,postLink,DatesListExcel,workbook,sheet,FilePath)
 
 
 def WritingInExcel(str_links,wordSearch,postLink,DatesListExcel,workbook,sheet,FilePath):
-    i = len(sheet['A'])
-    print(DatesListExcel)
-    print(i)
+    i = len(sheet['A']) #Get the last row
     j = 0
-    #while i<(len(str_links)+1):
     for a in str_links:
-        #if (CheckingEachOne(str_links[i-1])) != False:
-        if (CheckingEachOne(str_links[j])) != False:
+        if (CheckingEachOne(str_links[j])) != False: #Print the info in the DB
             sheet["A"+str(i)] = str_links[j]
             sheet["B" + str(i)] = wordSearch[j]
             sheet["C" + str(i)] = postLink[j]
@@ -96,7 +86,7 @@ def WritingInExcel(str_links,wordSearch,postLink,DatesListExcel,workbook,sheet,F
     workbook.save(filename=FilePath)
 
 
-def CheckingEachOne(name,sheet):
+def CheckingEachOne(name,sheet): #Checking if the name is already in the DB
     for cell in sheet['A']:
         if (cell.value == name):
             return False
@@ -105,28 +95,21 @@ def CheckingEachOne(name,sheet):
 
 
 def mainRun():
-    FilePath = "C:/Users/niv/Documents/NWI.xlsx"
+    FilePath = "C:/Users/USERNAME/Documents/FILENAME" #Enter you DB path (where you want to store your user id)
     workbook = load_workbook(filename=FilePath)
     sheet = workbook.active
+
+    #Cities from where you want to get users
     MainRunArray = [ "NWI",'Hammond',  "Elkhart", 'South+Bend','Gary', 'East+Chicago', 'Michigan+City', 'La+Porte']
-    #['Hammond', "elkhart", 'South Bend','Gary', 'East Chicago', 'Michigan City', 'la porte',] kind == 1
-    #MainRunArray = ["NWI"] kind == 2
-    #MainRunArray = ["NWI"]
-    pos = 1
+
+    #pos = 1
     for i in MainRunArray:
         print(i)
-        if (i == "NWI"):
-            #if (i == "NWI"):
-            print(i)
+        if (i == "NWI"):# NWI (North-West Indiana) is a name for a large place and to a city
             CheckByCityName(i, 2,workbook,sheet,FilePath)
         else:
             CheckByCityName(i, 1,workbook,sheet,FilePath)
 
-        pos = pos +1
-    #print(len(str_links))
-    #print(str_links)
+        #pos = pos +1
 
 mainRun()
-
-
-
